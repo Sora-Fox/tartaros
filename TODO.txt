@@ -1,0 +1,109 @@
+framebuffer
+
+PIC
+
+vfs: ramfs
+scheduler
+usermode
+
+use putch for printf impl and add colors sup
+
+
+
+Kernel Boot Stages
+
+Stage 0 — Bootloader (GRUB)
+
+Загружает ELF ядра в память
+
+Передаёт Multiboot-структуры
+
+Передаёт управление в _start (protected mode)
+
+Stage 1 — Early kernel (identity mapping)
+Место: _start, jump_higher_half
+
+Задачи:
+
+Установить временный стек
+
+Создать начальные page tables
+
+Включить paging
+
+Отобразить ядро в higher half
+
+Перейти на виртуальные адреса higher half
+
+Ограничения:
+
+Нет heap
+
+Нет глобальных конструкторов
+
+Нет драйверов
+
+Только минимальный debug-вывод
+
+Stage 2 — Boot stage 2 (higher half, подготовка среды)
+Место: boot_stage_2 (бывший higher_half)
+
+Задачи:
+
+Разобрать Multiboot
+
+Определить карту физической памяти
+
+Выбрать регион под heap (без аллокаций)
+
+Инициализировать GDT
+
+Инициализировать IDT
+
+Инициализировать аллокатор
+
+Вызвать глобальные конструкторы
+
+Ограничения:
+
+Heap доступен только после init_alloc
+
+Полноценный C++ доступен только после constructors
+
+Stage 3 — Kernel entry (система готова)
+Место: kernel_entry
+
+Гарантии:
+
+Paging включён
+
+Higher half активен
+
+Heap работает
+
+Глобальные конструкторы выполнены
+
+Задачи:
+
+Инициализация подсистем ядра (console, tty и т.п.)
+
+Очистка boot-артефактов (по желанию)
+
+Переход в kernel_main
+
+Stage 4 — Kernel main
+Место: kernel_main
+
+Задачи:
+
+Основная логика ядра
+
+Управление процессами
+
+Системные сервисы
+
+Работа с устройствами
+
+Ограничения:
+
+Не должен зависеть от деталей загрузки
