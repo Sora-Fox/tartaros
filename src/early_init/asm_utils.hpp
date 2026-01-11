@@ -15,6 +15,12 @@ namespace assembly {
   inline void outb(const uint16_t, const uint8_t);
 }
 
+/*
+ * TODO: Move asm utils to libk: no kernel logic here
+ * TODO: Move definitions to .cpp file to allow cpu store
+ * funcntions bodys in cache to prevent cache misses
+ */
+
 void assembly::hlt()
 {
   asm volatile("hlt");
