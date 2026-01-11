@@ -44,12 +44,12 @@ void early::enter_kernel(uint32_t magic, const multiboot_info* mbi)
   }
   init_gdt();
   puts("GDT Initialized successfully");
-//  init_idt();
+  init_idt();
   puts("IDT Initialized successfully");
   call_constructors();
   puts("Constructors called successfully");
   /* TODO: Call kernel main */
-  while(true) {
+  while (true) {
     asm volatile("hlt");
   } // TODO: Double fault after idt init
   call_destructors();
