@@ -30,10 +30,9 @@ OBJ = $(addprefix $(BUILD)/,$(SRC:.cpp=.o))
 DEP = $(OBJ:.o=.d)
 
 override CPPFLAGS += -MMD -MP -Isrc
-override CXXFLAGS += -ffreestanding
-override CXXFLAGS += -fno-exceptions -fno-rtti
-override CXXFLAGS += -std=c++20
+override CXXFLAGS += -ffreestanding -fno-exceptions -fno-rtti
 override CXXFLAGS += -Wall -Wextra -Wpedantic -Werror
+override CXXFLAGS += -std=c++20
 override CXXFLAGS += -g
 override LDFLAGS += -T linker.ld -nostdlib -Wl,-no-pie
 
@@ -94,16 +93,11 @@ $(BUILD)/$(ISO): $(BUILD)/$(TARGET) grub.cfg
 
 .PHONY: qemu 
 qemu: $(BUILD)/$(ISO)
-	qemu-system-i386 -cdrom $< -boot d -serial stdio -m 8G
+	qemu-system-x86_64 -cdrom $< -boot d -serial stdio -m 8G
 
 .PHONY: gdb
 gdb: $(BUILD)/$(ISO)
-	qemu-system-i386 -cdrom $< -boot d -serial stdio -m 8G -s -S
-
-# TODO: Remove zip target
-.PHONY: zip
-zip:
-	tar cJvf archive.tar.xz $(shell git ls-files)
+	qemu-system-x86_64 -cdrom $< -boot d -serial stdio -m 8G -s -S
 
 -include $(DEP)
 
