@@ -1,6 +1,8 @@
 #include "early_init/vga.hpp"
+#include <ctype.h>
 #include <stddef.h>
 #include <stdint.h>
+#include "early_init/asm_utils.hpp"
 #include "libk/algorithm.hpp"
 
 namespace {
@@ -16,6 +18,7 @@ namespace {
   void clear_screen();
   void scroll_line();
   void newline();
+  void update_hardware_cursor();
 
 }
 
@@ -23,15 +26,18 @@ void early::init_vga(void* buf)
 {
   buffer = static_cast<uint16_t*>(buf);
   clear_screen();
+  update_hardware_cursor();
 }
 
 void early::vga_out_char(char ch)
 {
   switch (ch) {
   case '\n':
+    update_hardware_cursor();
     newline();
     return;
   case '\r':
+    update_hardware_cursor();
     cursor_x = 0;
     return;
   }
@@ -44,6 +50,7 @@ void early::vga_out_char(char ch)
   const auto idx = cursor_y * width + cursor_x;
   buffer[idx] = (color << 8) | static_cast<uint16_t>(ch);
   ++cursor_x;
+  update_hardware_cursor();
 }
 
 namespace {
@@ -72,4 +79,14 @@ namespace {
     }
     cursor_x = 0;
   }
+
+  void update_hardware_cursor()
+  {
+    const auto idx = cursor_y * width + cursor_x;
+    assembly::outb(0x3D4, 0x0F);
+    assembly::outb(0x3D5, idx & 0xFF);
+    assembly::outb(0x3D4, 0x0E);
+    assembly::outb(0x3D5, idx >> 8);
+  }
+
 }
