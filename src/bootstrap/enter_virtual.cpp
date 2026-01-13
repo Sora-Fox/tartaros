@@ -45,6 +45,7 @@ namespace {
   [[gnu::section(".bootstrap.text")]] page_struct make_page_struct(uintptr_t);
   [[gnu::section(".bootstrap.text")]] page_struct* alloc_pt();
   [[gnu::section(".bootstrap.text")]] void enable_paging();
+  [[gnu::section(".bootstrap.text")]] void map_recursivly();
 }
 
 void bootstrap::enter_virtual(uint32_t magic, const multiboot_info* mbi)
@@ -57,6 +58,7 @@ void bootstrap::enter_virtual(uint32_t magic, const multiboot_info* mbi)
   map_region(kvstart_int, kvend_int, kvstart_int - kvbase_int);
   map_page(vga_virt, vga_phys);
   map_page(mbi_int, mbi_int);
+  map_recursivly();
   enable_paging();
   early::enter_kernel(magic, mbi);
 }
@@ -120,5 +122,13 @@ namespace {
         :
         : [pd] "r"(pd_phys), [base] "i"(linker::kvbase_int)
         : "eax");
+  }
+
+  void map_recursivly()
+  {
+    size_t recursive_index = 1023;
+    auto pd_phys = bootstrap::to_phys(page_directory);
+    const auto pd_addr = reinterpret_cast<uintptr_t>(pd_phys);
+    pd_phys[recursive_index] = make_page_struct(pd_addr);
   }
 }
