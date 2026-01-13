@@ -18,6 +18,7 @@
  */
 
 #include "console.hpp"
+#include "libk/ctype.hpp"
 
 kernel::Console::Console(VideoDriver* driver) : driver_(driver)
 {
@@ -44,7 +45,7 @@ void kernel::Console::set_driver(VideoDriver* driver)
 
 void kernel::Console::write_char(const char ch)
 {
-  if (ch >= 32 && ch <= 126) { /* TODO: Implement isprint() */
+  if (std::isprint(ch)) {
     if (x_cord_ + 1 == driver_->width()) {
       newline();
     }

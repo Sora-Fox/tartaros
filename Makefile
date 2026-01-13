@@ -20,7 +20,7 @@ SRC += src/bootstrap/utils.cpp src/bootstrap/start.cpp src/bootstrap/enter_virtu
 SRC += src/early_init/mb_parser.cpp src/early_init/constructors.cpp src/early_init/gdt.cpp src/early_init/idt.cpp src/early_init/enter_kernel.cpp src/early_init/vga.cpp src/early_init/console.cpp src/early_init/panic.cpp
 SRC += src/kernel/console.cpp src/kernel/vga_driver.cpp src/kernel/core_utils.cpp
 SRC += src/mm/new.cpp src/mm/alloc.cpp src/mm/paging.cpp
-SRC += src/libk/builtin.cpp src/libk/vsnprintf.cpp src/libk/cxxabi.cpp
+SRC += src/libk/builtin.cpp src/libk/vsnprintf.cpp src/libk/cxxabi.cpp src/libk/ctype.cpp
 
 BUILD = build
 TARGET = bin/kernel

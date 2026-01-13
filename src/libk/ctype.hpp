@@ -17,27 +17,24 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "video_driver.hpp"
+#ifndef LIBK_CTYPE_HPP
+#define LIBK_CTYPE_HPP
 
-namespace kernel {
-  class Console
-  {
-  public:
-    explicit Console(VideoDriver*);
-    void set_color(color);
-    void write_string(const char*);
-    void set_driver(VideoDriver*);
-
-  private:
-    using size_type = VideoDriver::size_type;
-
-    VideoDriver* driver_;
-    size_type x_cord_ = 0;
-    size_type y_cord_ = 0;
-    color bg_color_ = color::black;
-    color fg_color_ = color::bright_white;
-
-    void write_char(char);
-    void newline();
-  };
+namespace std {
+  bool isalnum(int);
+  bool isalpha(int);
+  bool isblank(int);
+  bool iscntrl(int);
+  bool isdigit(int);
+  bool isgraph(int);
+  bool islower(int);
+  bool isprint(int);
+  bool ispunct(int);
+  bool isspace(int);
+  bool isupper(int);
+  bool isxdigit(int);
+  int tolower(int);
+  int toupper(int);
 }
+
+#endif

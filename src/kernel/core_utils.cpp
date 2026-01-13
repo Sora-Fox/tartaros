@@ -20,6 +20,7 @@
 #include "core_utils.hpp"
 #include "console.hpp"
 #include "early_init/asm_utils.hpp" // TODO: CODE ORG
+#include "libk/vsnprintf.hpp"
 #include "vga_driver.hpp"
 
 namespace {

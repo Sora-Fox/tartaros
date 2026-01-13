@@ -18,11 +18,11 @@
  */
 
 #include "early_init/vga.hpp"
-#include <ctype.h>
 #include <stddef.h>
 #include <stdint.h>
 #include "early_init/asm_utils.hpp"
 #include "libk/algorithm.hpp"
+#include "libk/ctype.hpp"
 
 namespace {
   constexpr size_t width = 80;
@@ -60,7 +60,7 @@ void early::vga_out_char(char ch)
     cursor_x = 0;
     return;
   }
-  if (ch < 32 || ch > 126) { /* TODO: Implement isprint() */
+  if (!std::isprint(ch)) {
     return;
   }
   if (cursor_x + 1 == width) {
