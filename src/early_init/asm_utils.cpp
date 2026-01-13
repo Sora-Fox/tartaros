@@ -17,21 +17,45 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ASM_UTILS_HPP
-#define ASM_UTILS_HPP
+#include "asm_utils.hpp"
 
-#include <stdint.h>
-
-namespace assembly {
-  void hlt();
-  void sti();
-  void cli();
-
-  uint32_t get_cr2();
-  uint32_t get_cr3();
-
-  uint8_t inb(const uint16_t);
-  void outb(const uint16_t, const uint8_t);
+void assembly::hlt()
+{
+  asm volatile("hlt");
 }
 
-#endif
+void assembly::cli()
+{
+  asm volatile("cli");
+}
+
+void assembly::sti()
+{
+  asm volatile("sti");
+}
+
+uint32_t assembly::get_cr2()
+{
+  uint32_t result = 0;
+  asm volatile("movl %%cr2, %0" : "+r"(result));
+  return result;
+}
+
+uint32_t assembly::get_cr3()
+{
+  uint32_t result = 0;
+  asm volatile("movl %%cr3, %0" : "+r"(result));
+  return result;
+}
+
+uint8_t assembly::inb(const uint16_t port)
+{
+  uint8_t value;
+  asm volatile("inb %1, %0" : "=a"(value) : "Nd"(port));
+  return value;
+}
+
+void assembly::outb(const uint16_t port, const uint8_t value)
+{
+  asm volatile("outb %0, %1" : : "a"(value), "Nd"(port));
+}
