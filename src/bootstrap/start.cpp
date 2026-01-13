@@ -30,8 +30,8 @@ constexpr uint32_t framebuffer = 1 << 2;
 constexpr uint32_t flags = align | meminfo | framebuffer;
 constexpr uint32_t checksum = -flags - MULTIBOOT_HEADER_MAGIC;
 
-[[using gnu: aligned(MULTIBOOT_HEADER_ALIGN), used,
-    section(".multiboot")]] const static multiboot_header mbh{
+[[using gnu: aligned(MULTIBOOT_HEADER_ALIGN), used, section(".multiboot")]]
+const static multiboot_header mbh{
   .magic = MULTIBOOT_HEADER_MAGIC,
   .flags = flags,
   .checksum = checksum,
@@ -56,6 +56,6 @@ extern "C" [[using gnu: naked, section(".bootstrap.text"), noreturn]] void _star
                "pushl %%eax\n"
                "call %P0\n"
       :
-      : "i"(bootstrap::enter_virtaul)
+      : "i"(bootstrap::enter_virtual)
       :);
 }

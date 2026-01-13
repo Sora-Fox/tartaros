@@ -47,7 +47,7 @@ namespace {
   [[gnu::section(".bootstrap.text")]] void enable_paging();
 }
 
-void bootstrap::enter_virtaul(uint32_t magic, const multiboot_info* mbi)
+void bootstrap::enter_virtual(uint32_t magic, const multiboot_info* mbi)
 {
   using namespace linker;
   const auto vga_phys = static_cast<uintptr_t>(0x000B'8000);

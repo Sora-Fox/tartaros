@@ -26,8 +26,7 @@ struct multiboot_info;
 
 namespace bootstrap {
   [[gnu::section(".bootstrap.text"), noreturn]]
-  void enter_virtaul(uint32_t, const multiboot_info*);
-  /* TODO: type: virtaul -> virtual */
+  void enter_virtual(uint32_t, const multiboot_info*);
 }
 
 #endif
