@@ -39,30 +39,42 @@ constexpr size_t pd_size = 1024;
 alignas(page_size) page_struct page_directory[pd_size];
 
 namespace {
-  page_struct* get_page_table(size_t);
-  page_struct make_page_struct(uintptr_t);
+  [[nodiscard]] page_struct* get_page_table(size_t);
+  [[nodiscard]] page_struct make_page_struct(uintptr_t);
+  [[nodiscard]] bool is_page_aligned(uintptr_t);
   void flush_tlb(uintptr_t);
 }
 
-void mm::map_page(const uintptr_t vaddr, const uintptr_t phys)
+bool mm::map_page(const uintptr_t vaddr, const uintptr_t paddr)
 {
+  if (!is_page_aligned(paddr)) {
+    return false;
+  }
   const auto pd_idx = vaddr >> 22 & 0x3FF;
   const auto pt_idx = vaddr >> 12 & 0x3FF;
   if (!page_directory[pd_idx].present) {
     /* TODO: Physical memory allocator */
+    return false;
   }
   page_struct* pt = get_page_table(pd_idx);
-  pt[pt_idx] = make_page_struct(phys);
+  pt[pt_idx] = make_page_struct(paddr);
   flush_tlb(vaddr);
+  return true;
 }
 
-void mm::map_region(uintptr_t vbeg, const uintptr_t vend, uintptr_t phys)
+bool mm::map_region(const uintptr_t vbegin, const uintptr_t vend, const uintptr_t pbegin)
 {
-  while (vbeg < vend) {
-    map_page(vbeg, phys);
-    vbeg += page_size;
-    phys += page_size;
+  uintptr_t vcurr = vbegin;
+  uintptr_t pcurr = pbegin;
+  while (vcurr < vend && map_page(vcurr, pcurr)) {
+    vcurr += page_size;
+    pcurr += page_size;
   }
+  if (vcurr < vend) {
+    unmap_region(vbegin, vcurr);
+    return false;
+  }
+  return true;
 }
 
 void mm::unmap_page(const uintptr_t vaddr)
@@ -77,11 +89,13 @@ void mm::unmap_page(const uintptr_t vaddr)
   flush_tlb(vaddr);
 }
 
-void mm::unmap_region(uintptr_t vbeg, const uintptr_t vend)
+void mm::unmap_region(uintptr_t vbegin, uintptr_t vend)
 {
-  while (vbeg < vend) {
-    unmap_page(vbeg);
-    vbeg += page_size;
+  vbegin &= ~0xFFF;
+  vend &= ~0xFFF;
+  while (vbegin < vend) {
+    unmap_page(vbegin);
+    vbegin += page_size;
   }
 }
 
@@ -102,9 +116,13 @@ namespace {
     };
   };
 
+  bool is_page_aligned(const uintptr_t addr)
+  {
+    return addr % page_size != 0;
+  }
+
   void flush_tlb(const uintptr_t vaddr)
   {
     asm volatile("invlpg %0" : : "m"(vaddr) : "memory");
   }
-
 }

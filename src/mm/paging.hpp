@@ -23,10 +23,10 @@
 #include <stdint.h>
 
 namespace mm {
-  void map_page(uintptr_t virt, uintptr_t phys);
-  void map_region(uintptr_t vbegin, uintptr_t vend, uintptr_t phys);
+  [[nodiscard]] bool map_page(uintptr_t vaddr, uintptr_t paddr);
+  [[nodiscard]] bool map_region(uintptr_t vbegin, uintptr_t vend, uintptr_t pbegin);
 
-  void unmap_page(uintptr_t virt);
+  void unmap_page(uintptr_t vaddr);
   void unmap_region(uintptr_t vbegin, uintptr_t vend);
 }
 
