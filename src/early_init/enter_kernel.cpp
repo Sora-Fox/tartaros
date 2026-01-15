@@ -27,6 +27,7 @@
 #include "early_init/idt.hpp"
 #include "early_init/panic.hpp"
 #include "early_init/vga.hpp"
+#include "kernel/main.hpp"
 #include "mb_parser.hpp"
 #include "mm/alloc.hpp"
 #include "mm/paging.hpp"
@@ -67,10 +68,7 @@ void early::enter_kernel(uint32_t magic, const multiboot_info* mbi)
   puts("IDT Initialized successfully");
   call_constructors();
   puts("Constructors called successfully");
-  /* TODO: Call kernel main */
-  while (true) {
-    asm volatile("hlt");
-  } // TODO: Double fault after idt init
+  kernel::main();
   call_destructors();
   puts("Destructors called successfully");
   panic("Unexpected finish");
