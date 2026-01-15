@@ -17,20 +17,17 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MM_PAGING_HPP
-#define MM_PAGING_HPP
+#ifndef MM_PHYS_ALLOC_HPP
+#define MM_PHYS_ALLOC_HPP
 
 #include <stddef.h>
 #include <stdint.h>
 
 namespace mm {
-  constexpr size_t page_size = 4096;
+  bool init_phys_alloc(uintptr_t, size_t);
 
-  [[nodiscard]] bool map_page(uintptr_t vaddr, uintptr_t paddr);
-  [[nodiscard]] bool map_region(uintptr_t vbegin, uintptr_t vend, uintptr_t pbegin);
-
-  void unmap_page(uintptr_t vaddr);
-  void unmap_region(uintptr_t vbegin, uintptr_t vend);
+  uintptr_t alloc_phys(size_t num_pages = 1);
+  void free_phys(uintptr_t, size_t num_pages = 1);
 }
 
 #endif

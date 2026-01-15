@@ -17,20 +17,32 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MM_PAGING_HPP
-#define MM_PAGING_HPP
+#include "phys_alloc.hpp"
+#include "libk/utility.hpp"
+#include "paging.hpp"
 
-#include <stddef.h>
-#include <stdint.h>
-
-namespace mm {
-  constexpr size_t page_size = 4096;
-
-  [[nodiscard]] bool map_page(uintptr_t vaddr, uintptr_t paddr);
-  [[nodiscard]] bool map_region(uintptr_t vbegin, uintptr_t vend, uintptr_t pbegin);
-
-  void unmap_page(uintptr_t vaddr);
-  void unmap_region(uintptr_t vbegin, uintptr_t vend);
+namespace {
+  uintptr_t heap_start = 0;
+  uintptr_t heap_end = 0;
 }
 
-#endif
+bool mm::init_phys_alloc(uintptr_t const base, const size_t size)
+{
+  heap_start = base;
+  heap_end = heap_start + size;
+  return base && size;
+}
+
+uintptr_t mm::alloc_phys(const size_t num_pages)
+{
+  if (!heap_start || !num_pages) {
+    return 0;
+  }
+  const uintptr_t new_heap_start = heap_start + page_size * num_pages;
+  if (new_heap_start > heap_end) {
+    return 0;
+  }
+  return std::exchange(heap_start, new_heap_start);
+}
+
+void mm::free_phys(const uintptr_t, const size_t) {}

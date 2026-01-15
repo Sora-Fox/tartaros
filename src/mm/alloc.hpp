@@ -23,9 +23,7 @@
 #include <stddef.h>
 
 namespace mm {
-  bool init_alloc(void*, size_t);
-
-  void* alloc(size_t, size_t = 8);
+  void* alloc(size_t);
   void free(const void*);
 }
 

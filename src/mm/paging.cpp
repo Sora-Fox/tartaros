@@ -19,6 +19,8 @@
 
 #include "mm/paging.hpp"
 #include <stddef.h>
+#include "libk/builtin.hpp"
+#include "mm/phys_alloc.hpp"
 
 struct [[gnu::packed]] page_struct
 {
@@ -34,9 +36,8 @@ struct [[gnu::packed]] page_struct
   uint32_t base : 20 = 0;
 };
 
-constexpr size_t page_size = 4096;
 constexpr size_t pd_size = 1024;
-alignas(page_size) page_struct page_directory[pd_size];
+alignas(mm::page_size) page_struct page_directory[pd_size];
 
 namespace {
   [[nodiscard]] page_struct* get_page_table(size_t);
@@ -53,8 +54,12 @@ bool mm::map_page(const uintptr_t vaddr, const uintptr_t paddr)
   const auto pd_idx = vaddr >> 22 & 0x3FF;
   const auto pt_idx = vaddr >> 12 & 0x3FF;
   if (!page_directory[pd_idx].present) {
-    /* TODO: Physical memory allocator */
-    return false;
+    const auto new_pt = alloc_phys();
+    if (!new_pt) {
+      return false;
+    }
+    page_directory[pd_idx] = make_page_struct(new_pt);
+    memset(get_page_table(pd_idx), 0, page_size);
   }
   page_struct* pt = get_page_table(pd_idx);
   pt[pt_idx] = make_page_struct(paddr);
@@ -118,7 +123,7 @@ namespace {
 
   bool is_page_aligned(const uintptr_t addr)
   {
-    return addr % page_size != 0;
+    return addr % mm::page_size == 0;
   }
 
   void flush_tlb(const uintptr_t vaddr)
