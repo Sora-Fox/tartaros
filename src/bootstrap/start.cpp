@@ -42,7 +42,7 @@ const static multiboot_header mbh{
   .bss_end_addr = 0,
   .entry_addr = 0,
 
-  .mode_type = MULTIBOOT_FRAMEBUFFER_TYPE_RGB,
+  .mode_type = MULTIBOOT_FRAMEBUFFER_TYPE_INDEXED,
   .width = 1024,
   .height = 768,
   .depth = 32,

