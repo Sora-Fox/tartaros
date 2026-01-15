@@ -126,7 +126,7 @@ namespace {
 
   void map_recursivly()
   {
-    size_t recursive_index = 1023;
+    size_t recursive_index = 1023; /* TODO: Hardcode */
     auto pd_phys = bootstrap::to_phys(page_directory);
     const auto pd_addr = reinterpret_cast<uintptr_t>(pd_phys);
     pd_phys[recursive_index] = make_page_struct(pd_addr);

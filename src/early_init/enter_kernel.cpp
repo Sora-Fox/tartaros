@@ -36,7 +36,7 @@ void early::enter_kernel(uint32_t magic, const multiboot_info* mbi)
 {
   puts("Hello from higher half");
   using namespace linker;
-  init_vga(reinterpret_cast<void*>(0x000B'8000 + kvbase_int));
+  init_vga(reinterpret_cast<void*>(0x000B'8000 + kvbase_int)); /* TODO: Hardcode */
   init_console(vga_out_char);
   mb_info out;
   if (!parse_multiboot(magic, mbi, &out)) {
