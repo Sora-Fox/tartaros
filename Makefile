@@ -33,8 +33,7 @@ DEP = $(OBJ:.o=.d)
 
 override CPPFLAGS += -MMD -MP -Isrc
 override CXXFLAGS += -ffreestanding -fno-exceptions -fno-rtti
-#TODO: fix warnings
-override CXXFLAGS += -Wall -Wextra -Wpedantic #-Werror
+override CXXFLAGS += -Wall -Wextra -Wpedantic -Werror
 override CXXFLAGS += -std=c++20
 override CXXFLAGS += -g
 override LDFLAGS += -T linker.ld -nostdlib -Wl,-no-pie
@@ -84,6 +83,7 @@ $(FONT_OBJ): $(FONT)
 	$(if $(quiet),,@echo -e "[PSF] Compiling $(subst $(BUILD)/,,$@)")
 	@mkdir -p $(@D)
 	$(Q)objcopy -O elf32-i386 -B i386 -I binary $(FONT) $(FONT_OBJ)
+	$(Q)objcopy --add-section .note.GNU-stack=/dev/null $(FONT_OBJ)
 
 .PHONY: clean
 clean:
