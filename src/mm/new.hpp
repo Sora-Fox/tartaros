@@ -22,8 +22,26 @@
 
 #include <stddef.h>
 
-void* operator new(size_t);
-void operator delete(void*);
-void operator delete(void*, size_t);
+inline void* operator new(size_t, void* ptr) noexcept
+{
+  return ptr;
+}
+
+inline void* operator new[](size_t, void* ptr) noexcept
+{
+  return ptr;
+}
+
+inline void operator delete(void*, void*) noexcept {}
+inline void operator delete[](void*, void*) noexcept {}
+
+void* operator new(size_t size);
+void* operator new[](size_t size);
+
+void operator delete(void* ptr) noexcept;
+void operator delete[](void* ptr) noexcept;
+
+void operator delete(void* ptr, size_t) noexcept;
+void operator delete[](void* ptr, size_t) noexcept;
 
 #endif

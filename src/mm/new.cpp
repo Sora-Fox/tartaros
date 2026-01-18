@@ -25,12 +25,35 @@ void* operator new(size_t size)
   return mm::alloc(size);
 }
 
-void operator delete(void* ptr)
+void* operator new[](size_t size)
 {
-  mm::free(ptr);
+  return mm::alloc(size);
 }
 
-void operator delete(void* ptr, size_t)
+void operator delete(void* ptr) noexcept
 {
-  mm::free(ptr);
+  if (ptr) {
+    mm::free(ptr);
+  }
+}
+
+void operator delete[](void* ptr) noexcept
+{
+  if (ptr) {
+    mm::free(ptr);
+  }
+}
+
+void operator delete(void* ptr, size_t) noexcept
+{
+  if (ptr) {
+    mm::free(ptr);
+  }
+}
+
+void operator delete[](void* ptr, size_t) noexcept
+{
+  if (ptr) {
+    mm::free(ptr);
+  }
 }
