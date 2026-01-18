@@ -19,7 +19,7 @@
 
 #include "mm/paging.hpp"
 #include <stddef.h>
-#include "libk/builtin.hpp"
+#include "libk/string.hpp"
 #include "mm/phys_alloc.hpp"
 
 struct [[gnu::packed]] page_struct
@@ -59,7 +59,7 @@ bool mm::map_page(const uintptr_t vaddr, const uintptr_t paddr)
       return false;
     }
     page_directory[pd_idx] = make_page_struct(new_pt);
-    memset(get_page_table(pd_idx), 0, page_size);
+    std::memset(get_page_table(pd_idx), 0, page_size);
   }
   page_struct* pt = get_page_table(pd_idx);
   pt[pt_idx] = make_page_struct(paddr);
