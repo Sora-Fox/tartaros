@@ -51,12 +51,9 @@ namespace {
 void bootstrap::enter_virtual(uint32_t magic, const multiboot_info* mbi)
 {
   using namespace linker;
-  const auto vga_phys = static_cast<uintptr_t>(0x000B'8000);
-  const auto vga_virt = vga_phys + kvbase_int;
   const auto mbi_int = reinterpret_cast<uintptr_t>(mbi);
   map_region(bootstrap_start, bootstrap_end, bootstrap_start);
   map_region(kvstart_int, kvend_int, kvstart_int - kvbase_int);
-  map_page(vga_virt, vga_phys);
   map_page(mbi_int, mbi_int);
   map_recursivly();
   enable_paging();

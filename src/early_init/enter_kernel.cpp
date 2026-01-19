@@ -33,10 +33,14 @@
 #include "mm/paging.hpp"
 #include "mm/phys_alloc.hpp"
 
+namespace {
+  void setup_framebuffer(early::framebuffer_info);
+  void setup_vga();
+}
+
 void early::enter_kernel(uint32_t magic, const multiboot_info* mbi)
 {
   puts("Hello from higher half");
-  using namespace linker;
   mb_info out;
   if (!parse_multiboot(magic, mbi, &out)) {
     panic("Failed to parse multiboot info");
@@ -44,23 +48,13 @@ void early::enter_kernel(uint32_t magic, const multiboot_info* mbi)
   if (!mm::init_phys_alloc(out.heap_phys_addr, out.heap_size_bytes)) {
     panic("Failed to init allocator");
   }
-  if (!out.framebuffer_present) {
-    /* TODO: map vga here (instead of bootstrap) */
-    init_vga(reinterpret_cast<void*>(0x000B'8000 + kvbase_int)); /* TODO: Hardcode */
-    init_console(vga_out_char);
-    printf("VGA initialized\n");
+  if (out.framebuffer_present) {
+    setup_framebuffer(out.fb_info);
+    puts("Framebuffer output initialized");
   } else {
-    uintptr_t fb = mbi->framebuffer_addr;
-    if (!mm::map_region(0x6000'0000, 0x6000'0000 + mm::page_size * 1024, fb)) {
-      panic("Failed to map fb pages");
-    }
-    const auto fb_ptr = reinterpret_cast<void*>(0x6000'0000);
-    init_framebuffer(fb_ptr, mbi->framebuffer_pitch, mbi->framebuffer_width,
-        mbi->framebuffer_height);
-    init_console(framebuffer_out_char);
-    printf("Framebuffer initialized\n");
+    setup_vga();
+    puts("VGA output initialized");
   }
-
   {
     const bool has_name = mbi->flags & MULTIBOOT_INFO_BOOT_LOADER_NAME;
     const auto mbi_name = reinterpret_cast<const char*>(mbi->boot_loader_name);
@@ -72,6 +66,8 @@ void early::enter_kernel(uint32_t magic, const multiboot_info* mbi)
     printf("Alloc initialized: 0x%x, %zuMB\n", out.heap_phys_addr, heap_mb);
   }
   {
+    using linker::bootstrap_end;
+    using linker::bootstrap_start;
     mm::unmap_region(bootstrap_start, bootstrap_end);
     mm::unmap_page(reinterpret_cast<uintptr_t>(mbi));
     const size_t size_kb = (bootstrap_end - bootstrap_start + 4096) / 1024;
@@ -87,4 +83,26 @@ void early::enter_kernel(uint32_t magic, const multiboot_info* mbi)
   call_destructors();
   puts("Destructors called successfully");
   panic("Unexpected finish");
+}
+
+namespace {
+  void setup_framebuffer(const early::framebuffer_info fb_info)
+  {
+    const uintptr_t fb_phys = fb_info.addr;
+    const uintptr_t fb_virt = 0x6000'0000;          /* TODO: Hardcode */
+    const uintptr_t fb_size = mm::page_size * 1024; /* TODO: Hardcode */
+    mm::map_region_or_panic(fb_virt, fb_virt + fb_size, fb_phys);
+    const auto fb_ptr = reinterpret_cast<void*>(fb_virt);
+    early::init_framebuffer(fb_ptr, fb_info.pitch, fb_info.width, fb_info.height);
+    early::init_console(early::framebuffer_out_char);
+  }
+
+  void setup_vga()
+  {
+    constexpr uintptr_t vga_phys = 0x000B'8000;
+    const auto vga_virt = vga_phys + linker::kvbase_int;
+    mm::map_page_or_panic(vga_virt, vga_phys);
+    early::init_vga(reinterpret_cast<void*>(vga_virt));
+    early::init_console(early::vga_out_char);
+  }
 }
