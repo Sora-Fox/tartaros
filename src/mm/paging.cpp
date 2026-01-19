@@ -19,6 +19,7 @@
 
 #include "mm/paging.hpp"
 #include <stddef.h>
+#include "early_init/panic.hpp"
 #include "libk/string.hpp"
 #include "mm/phys_alloc.hpp"
 
@@ -80,6 +81,25 @@ bool mm::map_region(const uintptr_t vbegin, const uintptr_t vend, const uintptr_
     return false;
   }
   return true;
+}
+
+void mm::map_page_or_panic(const uintptr_t vaddr, const uintptr_t paddr)
+{
+  if (!map_page(vaddr, paddr)) {
+    panic("Failed to map page: 0x%X (virt) -> 0x%X (phys)", vaddr, paddr);
+  }
+}
+
+void mm::map_region_or_panic(const uintptr_t vbegin, const uintptr_t vend,
+    const uintptr_t pbegin)
+{
+  uintptr_t vcurr = vbegin;
+  uintptr_t pcurr = pbegin;
+  while (vcurr < vend) {
+    map_page_or_panic(vcurr, pcurr);
+    vcurr += page_size;
+    pcurr += page_size;
+  }
 }
 
 void mm::unmap_page(const uintptr_t vaddr)

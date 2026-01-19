@@ -29,6 +29,9 @@ namespace mm {
   [[nodiscard]] bool map_page(uintptr_t vaddr, uintptr_t paddr);
   [[nodiscard]] bool map_region(uintptr_t vbegin, uintptr_t vend, uintptr_t pbegin);
 
+  void map_page_or_panic(uintptr_t vaddr, uintptr_t paddr);
+  void map_region_or_panic(uintptr_t vbegin, uintptr_t vend, uintptr_t pbegin);
+
   void unmap_page(uintptr_t vaddr);
   void unmap_region(uintptr_t vbegin, uintptr_t vend);
 }
