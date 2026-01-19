@@ -61,17 +61,16 @@ void early::init_idt()
     .addr = reinterpret_cast<uintptr_t>(idt),
   };
   /*
-   * TODO: Init pic before "sti" to prevent double fault
+   * TODO:
    * if (apic_present()) {
-   *   disable_pic();
-   *   init_apic();
+   */
+  disable_pic();
+  /*   init_apic();
    * } else {
    *   init_pic();
    * }
    */
-  disable_pic();
-  asm volatile("lidt %[idtr]\n" : : [idtr] "m"(idtr));
-  assembly::sti();
+  asm volatile("lidt %[idtr]; sti" : : [idtr] "m"(idtr));
 }
 
 namespace {
@@ -84,11 +83,10 @@ namespace {
 
   struct [[gnu::packed]] interrupt_frame
   {
-    uint32_t ebp;
     uint32_t interrupt_number;
     uint32_t error_code;
     uint32_t eip;
-    uint32_t cs;
+    uint16_t cs;
     uint32_t eflags;
   };
 
@@ -148,14 +146,13 @@ namespace {
   void handle_exception(interrupt_frame ctx)
   {
     early::printf("%s\n", exceptions[ctx.interrupt_number]);
-    early::printf("ebp = %d\n", ctx.ebp);
     early::printf("number = %zu\n", ctx.interrupt_number);
     early::printf("error code = %zu\n", ctx.error_code);
     early::printf("cs = %zu\n", ctx.cs);
-    early::printf("eip = %zu\n", ctx.eip);
+    early::printf("eip = 0x%X\n", ctx.eip);
     early::printf("eflags = %zu\n", ctx.eflags);
-    early::printf("cr2 = 0x%x\n", assembly::get_cr2());
-    early::printf("cr3 = 0x%x\n", assembly::get_cr3());
+    early::printf("cr2 = 0x%X\n", assembly::get_cr2());
+    early::printf("cr3 = 0x%X\n", assembly::get_cr3());
     panic("System halted due to exception");
   }
 
@@ -164,9 +161,8 @@ namespace {
   {
     asm volatile("cli\n"
                  "pushl %[int_num]\n"
-                 "pushl %%ebp\n"
                  "call %P[handler]\n"
-                 "addl $12, %%esp\n"
+                 "addl $8, %%esp\n"
                  "sti\n"
                  "iret"
         :
@@ -180,9 +176,8 @@ namespace {
     asm volatile("cli\n"
                  "pushl $0\n"
                  "pushl %[int_num]\n"
-                 "pushl %%ebp\n"
                  "call %P[handler]\n"
-                 "addl $12, %%esp\n"
+                 "addl $8, %%esp\n"
                  "sti\n"
                  "iret"
         :
