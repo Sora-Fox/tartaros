@@ -27,12 +27,21 @@ struct multiboot_info;
 
 namespace early {
 
+  struct framebuffer_info
+  {
+    uintptr_t addr = 0;
+    size_t pitch = 0;
+    size_t width = 0;
+    size_t height = 0;
+  };
+
   struct mb_info
   {
     size_t total_ram_bytes = 0;
     uintptr_t heap_phys_addr = 0;
     size_t heap_size_bytes = 0;
     bool framebuffer_present = false;
+    framebuffer_info fb_info{};
   };
 
   [[nodiscard]] bool parse_multiboot(uint32_t, const multiboot_info*, mb_info*);

@@ -37,6 +37,12 @@ bool early::parse_multiboot(uint32_t magic, const multiboot_info* mbi, mb_info* 
   *out = {};
   out->total_ram_bytes = lower + upper + 1024 * 1024;
   out->framebuffer_present = mbi->flags & MULTIBOOT_INFO_FRAMEBUFFER_INFO;
+  if (out->framebuffer_present) {
+    out->fb_info.addr = mbi->framebuffer_addr;
+    out->fb_info.pitch = mbi->framebuffer_pitch;
+    out->fb_info.width = mbi->framebuffer_width;
+    out->fb_info.height = mbi->framebuffer_height;
+  }
 
   uintptr_t best_addr = 0;
   size_t best_len = 0;
