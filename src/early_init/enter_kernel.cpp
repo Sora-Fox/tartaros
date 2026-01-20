@@ -55,22 +55,13 @@ void early::enter_kernel(uint32_t magic, const multiboot_info* mbi)
     setup_vga();
     puts("VGA output initialized");
   }
+  printf("Bootloader: %s\n", out.bootloader_name);
+  const size_t heap_mb = out.heap_size_bytes / (1024 * 1024);
+  printf("Alloc initialized: 0x%x, %zuMB\n", out.heap_phys_addr, heap_mb);
   {
-    const bool has_name = mbi->flags & MULTIBOOT_INFO_BOOT_LOADER_NAME;
-    const auto mbi_name = reinterpret_cast<const char*>(mbi->boot_loader_name);
-    const auto name = has_name ? mbi_name : "UNKNOWN";
-    printf("Bootloader: %s\n", name);
-  }
-  {
-    const size_t heap_mb = out.heap_size_bytes / (1024 * 1024);
-    printf("Alloc initialized: 0x%x, %zuMB\n", out.heap_phys_addr, heap_mb);
-  }
-  {
-    using linker::bootstrap_end;
-    using linker::bootstrap_start;
-    mm::unmap_region(bootstrap_start, bootstrap_end);
+    mm::unmap_region(linker::bootstrap_start, linker::bootstrap_end);
     mm::unmap_page(reinterpret_cast<uintptr_t>(mbi));
-    const size_t size_kb = (bootstrap_end - bootstrap_start + 4096) / 1024;
+    const size_t size_kb = 4096 * 2; /* TODO: Hardcode */
     printf("Unmap unused regions: %zuKB\n", size_kb);
   }
   init_gdt();

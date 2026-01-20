@@ -40,6 +40,7 @@ namespace early {
     size_t total_ram_bytes = 0;
     uintptr_t heap_phys_addr = 0;
     size_t heap_size_bytes = 0;
+    const char* bootloader_name = "UNKNOWN";
     bool framebuffer_present = false;
     framebuffer_info fb_info{};
   };

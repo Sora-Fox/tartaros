@@ -43,6 +43,9 @@ bool early::parse_multiboot(uint32_t magic, const multiboot_info* mbi, mb_info* 
     out->fb_info.width = mbi->framebuffer_width;
     out->fb_info.height = mbi->framebuffer_height;
   }
+  if (mbi->flags & MULTIBOOT_INFO_BOOT_LOADER_NAME) {
+    out->bootloader_name = reinterpret_cast<const char*>(mbi->boot_loader_name);
+  }
 
   uintptr_t best_addr = 0;
   size_t best_len = 0;
