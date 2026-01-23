@@ -70,6 +70,15 @@ void early::enter_kernel(uint32_t magic, const multiboot_info* mbi)
   puts("IDT Initialized successfully");
   call_constructors();
   puts("Constructors called successfully");
+  /*
+   * *(volatile int*)(0xE000'1111) = 1;
+   *  TODO:
+   *  if map this addr in exception handler it will fault
+   *  again on the addr 0x100. After mapping page 0x0
+   *  erverthying will be fine
+   *  Why?
+   * puts("ENTER KERNEL CONTINUED");
+   */
   kernel::main();
   call_destructors();
   puts("Destructors called successfully");
