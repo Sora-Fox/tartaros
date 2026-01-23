@@ -27,6 +27,7 @@
 #include "early_init/gdt.hpp"
 #include "early_init/idt.hpp"
 #include "early_init/panic.hpp"
+#include "early_init/pic.hpp"
 #include "early_init/vga.hpp"
 #include "kernel/main.hpp"
 #include "mb_parser.hpp"
@@ -68,6 +69,8 @@ void early::enter_kernel(uint32_t magic, const multiboot_info* mbi)
   puts("GDT Initialized successfully");
   init_idt();
   puts("IDT Initialized successfully");
+  init_pic();
+  puts("PIC Initialized successfully");
   call_constructors();
   puts("Constructors called successfully");
   /*

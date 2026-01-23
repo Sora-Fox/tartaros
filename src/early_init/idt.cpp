@@ -26,7 +26,6 @@
 #include "early_init/panic.hpp"
 
 namespace {
-
   struct [[gnu::packed]] idt_entry
   {
     uint16_t isr_low;
@@ -47,8 +46,6 @@ namespace {
 
   template <uint8_t = 0, uint8_t = 32>
   void init_isrs(idt_entry*);
-
-  void disable_pic();
 }
 
 void early::init_idt()
@@ -60,16 +57,6 @@ void early::init_idt()
     .size = sizeof(idt) - 1,
     .addr = reinterpret_cast<uintptr_t>(idt),
   };
-  /*
-   * TODO:
-   * if (apic_present()) {
-   */
-  disable_pic();
-  /*   init_apic();
-   * } else {
-   *   init_pic();
-   * }
-   */
   asm volatile("lidt %[idtr]; sti" : : [idtr] "m"(idtr));
 }
 
@@ -183,19 +170,5 @@ namespace {
         :
         : [int_num] "i"(I), [handler] "i"(handle_exception)
         : "esp");
-  }
-
-  void disable_pic()
-  {
-    assembly::outb(0x20, 0x11);
-    assembly::outb(0xA0, 0x11);
-    assembly::outb(0x21, 0x20);
-    assembly::outb(0xA1, 0x28);
-    assembly::outb(0x21, 0x04);
-    assembly::outb(0xA1, 0x02);
-    assembly::outb(0x21, 0x01);
-    assembly::outb(0xA1, 0x01);
-    assembly::outb(0x21, 0xFF);
-    assembly::outb(0xA1, 0xFF);
   }
 }
