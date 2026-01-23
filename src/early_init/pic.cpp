@@ -22,9 +22,11 @@
 
 namespace {
   constexpr uint16_t master_cmd = 0x0020;
-  constexpr uint16_t master_data = 0x0021;
+  constexpr uint16_t master_data = master_cmd + 1;
   constexpr uint16_t slave_cmd = 0x00A0;
-  constexpr uint16_t slave_data = 0x00A1;
+  constexpr uint16_t slave_data = slave_cmd + 1;
+
+  void mask_all();
 }
 
 void early::init_pic()
@@ -39,6 +41,36 @@ void early::init_pic()
   assembly::outb(master_data, 0x01);
   assembly::outb(slave_data, 0x01);
 
-  assembly::outb(master_data, 0xFF);
-  assembly::outb(slave_data, 0xFF);
+  mask_all();
+}
+
+void early::pic_send_eoi(const uint8_t irq)
+{
+  constexpr static uint8_t eoi = 0x20;
+  if (irq >= 8) {
+    assembly::outb(slave_cmd, eoi);
+  }
+  assembly::outb(master_cmd, eoi);
+}
+
+void early::mask_irq(const uint8_t irq)
+{
+  const auto pic_data = irq < 8 ? master_data : slave_data;
+  const auto mask = assembly::inb(pic_data) | (1 << (irq % 8));
+  assembly::outb(pic_data, mask);
+}
+
+void early::unmask_irq(const uint8_t irq)
+{
+  const auto pic_data = irq < 8 ? master_data : slave_data;
+  const auto mask = assembly::inb(pic_data) & ~(1 << (irq % 8));
+  assembly::outb(pic_data, mask);
+}
+
+namespace {
+  void mask_all()
+  {
+    assembly::outb(master_data, 0xFF);
+    assembly::outb(slave_data, 0xFF);
+  };
 }

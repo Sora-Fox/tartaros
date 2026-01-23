@@ -20,8 +20,14 @@
 #ifndef PIC_HPP
 #define PIC_HPP
 
+#include <stdint.h>
+
 namespace early {
   void init_pic();
+  void pic_send_eoi(uint8_t);
+
+  void mask_irq(uint8_t);
+  void unmask_irq(uint8_t);
 }
 
 #endif
