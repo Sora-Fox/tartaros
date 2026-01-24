@@ -17,7 +17,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "early_init/idt.hpp"
+#include "interrupts/idt.hpp"
 #include <stddef.h>
 #include <stdint.h>
 #include "early_init/asm_utils.hpp"
@@ -48,7 +48,7 @@ namespace {
   void init_isrs(idt_entry*);
 }
 
-void early::init_idt()
+void interrupts::init_idt()
 {
   constexpr static size_t idt_size = 256;
   static idt_entry idt[idt_size]{};

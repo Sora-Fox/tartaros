@@ -17,7 +17,8 @@
 
 SRC =
 SRC += src/bootstrap/utils.cpp src/bootstrap/start.cpp src/bootstrap/enter_virtual.cpp
-SRC += src/early_init/mb_parser.cpp src/early_init/constructors.cpp src/early_init/gdt.cpp src/early_init/idt.cpp src/early_init/enter_kernel.cpp src/early_init/vga.cpp src/early_init/console.cpp src/early_init/panic.cpp src/early_init/asm_utils.cpp src/early_init/framebuffer.cpp src/early_init/pic.cpp
+SRC += src/early_init/mb_parser.cpp src/early_init/constructors.cpp src/early_init/gdt.cpp src/early_init/console.cpp src/early_init/framebuffer.cpp src/early_init/asm_utils.cpp src/early_init/enter_kernel.cpp src/early_init/panic.cpp src/early_init/vga.cpp
+SRC += src/interrupts/pic.cpp src/interrupts/idt.cpp src/interrupts/interrupts.cpp
 SRC += src/kernel/console.cpp src/kernel/vga_driver.cpp src/kernel/core_utils.cpp src/kernel/main.cpp
 SRC += src/mm/new.cpp src/mm/alloc.cpp src/mm/paging.cpp src/mm/phys_alloc.cpp
 SRC += src/libk/vsnprintf.cpp src/libk/cxxabi.cpp src/libk/ctype.cpp src/libk/string.cpp

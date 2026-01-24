@@ -17,13 +17,13 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PIC_HPP
-#define PIC_HPP
+#ifndef INTERRUPTS_PIC_HPP
+#define INTERRUPTS_PIC_HPP
 
 #include <stdint.h>
 
-namespace early {
-  void init_pic();
+namespace interrupts {
+  void init_pic(uint8_t);
   void pic_send_eoi(uint8_t);
 
   void mask_irq(uint8_t);

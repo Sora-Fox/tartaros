@@ -17,11 +17,16 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef IDT_HPP
-#define IDT_HPP
+#ifndef INTERRUPTS_INTERRUPTS_HPP
+#define INTERRUPTS_INTERRUPTS_HPP
 
-namespace early {
-  void init_idt();
+#include <stdint.h>
+
+namespace interrupts {
+  constexpr uint8_t timer_irq = 1;
+  constexpr uint8_t keyboard_irq = 1;
+
+  void init_interrupts();
 }
 
 #endif

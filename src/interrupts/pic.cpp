@@ -17,8 +17,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "early_init/pic.hpp"
-#include "asm_utils.hpp"
+#include "interrupts/pic.hpp"
+#include "early_init/asm_utils.hpp"
 
 namespace {
   constexpr uint16_t master_cmd = 0x0020;
@@ -29,22 +29,20 @@ namespace {
   void mask_all();
 }
 
-void early::init_pic()
+void interrupts::init_pic(const uint8_t offset)
 {
   assembly::outb(master_cmd, 0x11);
   assembly::outb(slave_cmd, 0x11);
-
-  assembly::outb(master_data, 0x20);
-  assembly::outb(slave_data, 0x28);
+  assembly::outb(master_data, offset);
+  assembly::outb(slave_data, offset + 8);
   assembly::outb(master_data, 0x04);
   assembly::outb(slave_data, 0x02);
   assembly::outb(master_data, 0x01);
   assembly::outb(slave_data, 0x01);
-
   mask_all();
 }
 
-void early::pic_send_eoi(const uint8_t irq)
+void interrupts::pic_send_eoi(const uint8_t irq)
 {
   constexpr static uint8_t eoi = 0x20;
   if (irq >= 8) {
@@ -53,14 +51,14 @@ void early::pic_send_eoi(const uint8_t irq)
   assembly::outb(master_cmd, eoi);
 }
 
-void early::mask_irq(const uint8_t irq)
+void interrupts::mask_irq(const uint8_t irq)
 {
   const auto pic_data = irq < 8 ? master_data : slave_data;
   const auto mask = assembly::inb(pic_data) | (1 << (irq % 8));
   assembly::outb(pic_data, mask);
 }
 
-void early::unmask_irq(const uint8_t irq)
+void interrupts::unmask_irq(const uint8_t irq)
 {
   const auto pic_data = irq < 8 ? master_data : slave_data;
   const auto mask = assembly::inb(pic_data) & ~(1 << (irq % 8));
