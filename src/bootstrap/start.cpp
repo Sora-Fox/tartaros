@@ -43,8 +43,8 @@ const static multiboot_header mbh{
   .entry_addr = 0,
 
   .mode_type = MULTIBOOT_FRAMEBUFFER_TYPE_INDEXED,
-  .width = 1024,
-  .height = 768,
+  .width = 0,
+  .height = 0,
   .depth = 32,
 };
 
