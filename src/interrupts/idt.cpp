@@ -44,15 +44,24 @@ namespace {
     uintptr_t addr;
   };
 
+  constexpr size_t ring0 = 0;
+  constexpr uint8_t interrupt_gate_type = 0xE;
+
   template <uint8_t = 0, uint8_t = 32>
-  void init_isrs(idt_entry*);
+  void init_isrs();
+
+  idt_entry make_idt_entry(uintptr_t, uint16_t = early::k_cs, uint8_t = ring0,
+      uint8_t = interrupt_gate_type);
+}
+
+namespace {
+  constexpr static size_t idt_size = 256;
+  static idt_entry idt[idt_size];
 }
 
 void interrupts::init_idt()
 {
-  constexpr static size_t idt_size = 256;
-  static idt_entry idt[idt_size]{};
-  init_isrs(idt);
+  init_isrs();
   const static idtr_register idtr{
     .size = sizeof(idt) - 1,
     .addr = reinterpret_cast<uintptr_t>(idt),
@@ -77,13 +86,8 @@ namespace {
     uint32_t eflags;
   };
 
-  constexpr uint8_t interrupt_gate_type = 0xE;
-  constexpr size_t ring0 = 0;
-
   template <uint8_t I, bool = false>
   idt_entry make_idt_entry();
-  idt_entry make_idt_entry(uintptr_t, uint16_t = early::k_cs, uint8_t = ring0,
-      uint8_t = interrupt_gate_type);
 
   template <uint8_t I>
   constexpr bool has_error_code()
@@ -92,11 +96,11 @@ namespace {
   }
 
   template <uint8_t I, uint8_t End>
-  void init_isrs(idt_entry* idt)
+  void init_isrs()
   {
     if constexpr (I < End) {
       idt[I] = make_idt_entry<I, has_error_code<I>()>();
-      init_isrs<I + 1, End>(idt);
+      init_isrs<I + 1, End>();
     }
   }
 
@@ -122,16 +126,17 @@ namespace {
     };
   }
 
-  const char* exceptions[32]{ "Division by zero", "Debugger", "NMI", "Breakpoint",
-    "Overflow", "Bounds", "Invalid Opcode", "Coprocessor not available", "Double fault",
-    "Coprocessor segment overrun", "Invalid Task State Segment", "Segment not present",
-    "Stack Fault", "General protection fault", "Page Fault", "Reserved", "Math Fault",
-    "Alignment Check", "Machine Check", "SIMD Floating Point Exception", "Reserved",
-    "Reserved", "Reserved", "Reserved", "Reserved", "Reserved", "Reserved", "Reserved",
-    "Reserved", "Reserved", "Reserved", "Reserved" };
-
   void handle_exception(interrupt_frame ctx)
   {
+    static const char* exceptions[32]{ "Division by zero", "Debugger", "NMI",
+      "Breakpoint", "Overflow", "Bounds", "Invalid Opcode", "Coprocessor not available",
+      "Double fault", "Coprocessor segment overrun", "Invalid Task State Segment",
+      "Segment not present", "Stack Fault", "General protection fault", "Page Fault",
+      "Reserved", "Math Fault", "Alignment Check", "Machine Check",
+      "SIMD Floating Point Exception", "Reserved", "Reserved", "Reserved", "Reserved",
+      "Reserved", "Reserved", "Reserved", "Reserved", "Reserved", "Reserved", "Reserved",
+      "Reserved" };
+
     early::printf("%s\n", exceptions[ctx.interrupt_number]);
     early::printf("number = %zu\n", ctx.interrupt_number);
     early::printf("error code = %zu\n", ctx.error_code);

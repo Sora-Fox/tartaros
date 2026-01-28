@@ -20,6 +20,8 @@
 #ifndef INTERRUPTS_IDT_HPP
 #define INTERRUPTS_IDT_HPP
 
+#include <stdint.h>
+
 namespace interrupts {
   void init_idt();
 }
