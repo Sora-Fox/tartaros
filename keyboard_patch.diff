@@ -1,0 +1,197 @@
+diff --git a/src/early_init/enter_kernel.cpp b/src/early_init/enter_kernel.cpp
+index fc9cd1d..675870b 100644
+--- a/src/early_init/enter_kernel.cpp
++++ b/src/early_init/enter_kernel.cpp
+@@ -33,6 +33,8 @@
+ #include "mm/paging.hpp"
+ #include "mm/phys_alloc.hpp"
+ 
++#include "keyboard.hpp"
++
+ namespace {
+   void setup_framebuffer(early::framebuffer_info);
+   void setup_vga();
+@@ -68,6 +70,7 @@ void early::enter_kernel(uint32_t magic, const multiboot_info* mbi)
+   puts("GDT Initialized successfully");
+   interrupts::init_interrupts();
+   puts("Interrupts Initialized successfully");
++  init_kbd();
+   call_constructors();
+   puts("Constructors called successfully");
+   /*
+diff --git a/src/early_init/keyboard.hpp b/src/early_init/keyboard.hpp
+new file mode 100644
+index 0000000..d344360
+--- /dev/null
++++ b/src/early_init/keyboard.hpp
+@@ -0,0 +1,170 @@
++#include <stdint.h>
++#include "early_init/console.hpp"
++#include "interrupts/interrupts.hpp"
++#include "interrupts/pic.hpp"
++
++inline void keyboard_handler(uint8_t scancode)
++{
++  static bool shift_left = false;
++  static bool shift_right = false;
++
++  constexpr char normal[128] = {
++    0,
++    27,
++    '1',
++    '2',
++    '3',
++    '4',
++    '5',
++    '6',
++    '7',
++    '8',
++    '9',
++    '0',
++    '-',
++    '=',
++    '\b',
++    '\t',
++    'q',
++    'w',
++    'e',
++    'r',
++    't',
++    'y',
++    'u',
++    'i',
++    'o',
++    'p',
++    '[',
++    ']',
++    '\n',
++    0,
++    'a',
++    's',
++    'd',
++    'f',
++    'g',
++    'h',
++    'j',
++    'k',
++    'l',
++    ';',
++    '\'',
++    '`',
++    0,
++    '\\',
++    'z',
++    'x',
++    'c',
++    'v',
++    'b',
++    'n',
++    'm',
++    ',',
++    '.',
++    '/',
++    0,
++    '*',
++    0,
++    ' ',
++  };
++
++  constexpr char shifted[128] = {
++    0,
++    27,
++    '!',
++    '@',
++    '#',
++    '$',
++    '%',
++    '^',
++    '&',
++    '*',
++    '(',
++    ')',
++    '_',
++    '+',
++    '\b',
++    '\t',
++    'Q',
++    'W',
++    'E',
++    'R',
++    'T',
++    'Y',
++    'U',
++    'I',
++    'O',
++    'P',
++    '{',
++    '}',
++    '\n',
++    0,
++    'A',
++    'S',
++    'D',
++    'F',
++    'G',
++    'H',
++    'J',
++    'K',
++    'L',
++    ':',
++    '"',
++    '~',
++    0,
++    '|',
++    'Z',
++    'X',
++    'C',
++    'V',
++    'B',
++    'N',
++    'M',
++    '<',
++    '>',
++    '?',
++    0,
++    '*',
++    0,
++    ' ',
++  };
++
++  bool released = scancode & 0x80;
++  uint8_t code = scancode & 0x7F;
++
++  if (code == 0x2A) {
++    if (released)
++      shift_left = false;
++    else
++      shift_left = true;
++    return;
++  }
++  if (code == 0x36) {
++    if (released)
++      shift_right = false;
++    else
++      shift_right = true;
++    return;
++  }
++
++  if (released)
++    return;
++
++  bool shift = shift_left || shift_right;
++
++  if (code < sizeof(normal)) {
++    char c = shift ? shifted[code] : normal[code];
++    if (c) {
++      //      early::printf("%c", c);
++    }
++  }
++  interrupts::pic_send_eoi(interrupts::keyboard_irq);
++}
++
++inline void init_kbd()
++{
++  auto f = keyboard_handler;
++  early::printf("kbd handler: 0x%x\n", (uintptr_t)f);
++  interrupts::set_irq(interrupts::keyboard_irq, (void*)f);
++}
